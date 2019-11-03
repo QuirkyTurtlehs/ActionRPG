@@ -7,10 +7,14 @@ public class TempPlayerMovement : MonoBehaviour
 {
     NavMeshAgent agent;
     Rigidbody rb;
+    public Animator animat;
 
     public Camera mainCamera;
 
     float moveSpeed;
+
+    int speedHash = Animator.StringToHash("Speed");
+    int directionHash = Animator.StringToHash("Direction");
 
     void Start()
     {
@@ -22,6 +26,10 @@ public class TempPlayerMovement : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             OnMouseButtonDown();
+        }
+        if (agent.velocity.magnitude < 0.1f)
+        {
+            animat.SetFloat(speedHash, 0.0f);
         }
     }
     void OnMouseButtonDown()
@@ -36,7 +44,9 @@ public class TempPlayerMovement : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit))
         {
+            animat.SetFloat(speedHash, 1f);
             agent.SetDestination(hit.point);
         }       
+
     }
 }

@@ -7,6 +7,8 @@ public class CameraFollow : MonoBehaviour
     // Start is called before the first frame updat
     public GameObject target;
 
+    public Vector3 offset;
+
     [SerializeField] float smoothTime = 0.5f;
 
     [SerializeField] Vector3 velocity = Vector3.zero;
@@ -19,14 +21,14 @@ public class CameraFollow : MonoBehaviour
     void Update()
     {
         if (target != null)
-        {
+        {  
             FollowTarget(target);
         }
+
     }
 
     void FollowTarget(GameObject target)
     {
-        transform.position = Vector3.SmoothDamp(transform.position, target.transform.position, ref velocity,smoothTime);
-
+        transform.position = Vector3.SmoothDamp(transform.position, target.transform.position + offset, ref velocity,smoothTime);        
     }
 }
