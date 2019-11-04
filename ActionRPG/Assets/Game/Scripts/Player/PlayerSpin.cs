@@ -4,26 +4,34 @@ using UnityEngine;
 
 public class PlayerSpin : MonoBehaviour
 {
-    public GameObject spinGm;
-
     BoxCollider spinCollider;
 
     Vector3 defaultSize;
 
     Quaternion defaultRotation;
+    Vector3 defaultPos;
+
     bool shouldRotate = false;
 
     public float spinTime = 0.09f;
+
+    public float radius = 2f;
+
     Vector3 rotVelocity = Vector3.zero;
 
     Vector3 sizeVelocity = Vector3.zero;
 
+    Vector3 capsulePoint;
+
+    [SerializeField] Material capsuleMaterial;
+
     void Start()
     {
-        spinCollider = spinGm.GetComponent<BoxCollider>();
-        spinCollider.enabled = false;
-        defaultRotation = spinGm.transform.rotation;
-        defaultSize = spinCollider.size;
+        //spinCollider = GetComponent<BoxCollider>();
+        //spinCollider.enabled = false;
+        defaultRotation = transform.rotation;
+        defaultPos = transform.position;
+        //defaultSize = spinCollider.size;
     }
 
     // Update is called once per frame
@@ -31,29 +39,60 @@ public class PlayerSpin : MonoBehaviour
     {
         if (shouldRotate)
         {
-            Quaternion currentRot = spinCollider.transform.localRotation;
+            Quaternion currentRot = transform.localRotation;
             Vector3 targetRot = new Vector3(0, 270f, 0);
-            Vector3 targetSize = new Vector3(spinCollider.size.x, spinCollider.size.y, 0.8f);
+            //Vector3 targetSize = new Vector3(spinCollider.size.x, spinCollider.size.y, 0.8f);
 
-            spinGm.transform.localRotation = Quaternion.Euler(Vector3.SmoothDamp(spinGm.transform.localRotation.eulerAngles, targetRot, ref rotVelocity, spinTime));
+            //transform.localRotation = Quaternion.Euler(Vector3.SmoothDamp(transform.localRotation.eulerAngles, targetRot, ref rotVelocity, spinTime));
 
-            spinCollider.size = Vector3.SmoothDamp(spinCollider.size, targetSize, ref sizeVelocity, spinTime);
-            if (spinCollider.size.z > 0.2f)
+            transform.RotateAround(transform.parent.transform.position, Vector3.up, 10f);
+
+            //spinCollider.size = Vector3.SmoothDamp(spinCollider.size, targetSize, ref sizeVelocity, spinTime);
+            //if (spinCollider.size.z > 0.2f)
+            //{
+            //    spinCollider.enabled = true;
+            //}
+
+            capsulePoint = new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z);
+
+            RaycastHit[] hits = Physics.CapsuleCastAll(transform.position, capsulePoint, radius, Vector3.up);                    
+            
+
+            for (int i = 0; i < hits.Length; i++)
             {
-                spinCollider.enabled = true;
-            }
-        }
-    }
+                if (hits.Length > 0)
+                {
+                    Debug.Log("eyyyyyyyy");
+                }
 
+                if (hits[i].collider.gameObject.tag == "Enemy")
+                {
+                    EnemyKnockback enemyKnockback = hits[i].collider.gameObject.GetComponent<EnemyKnockback>();
+                    enemyKnockback.OnHit(transform.parent.forward);   
+                }
+            }
+
+            //OnDrawGizmosSelected();
+        
+        }
+        else
+        {
+            
+        }
+       
+    }
+   
     public void SpinActivated()
     {        
-        shouldRotate = true;      
+        shouldRotate = true;
+       
     }
     public void SpinDeactivated()
     {
         shouldRotate = false;
-        spinGm.transform.localRotation = Quaternion.Euler(0,0,0);
-        spinCollider.size = defaultSize;
-        spinCollider.enabled = false;
+        transform.localRotation = defaultRotation;
+        transform.localPosition = new Vector3(0, 0.5f, -0.5f);
+        //spinCollider.size = defaultSize;
+        //spinCollider.enabled = false;
     }
 }

@@ -10,6 +10,8 @@ public class PlayerInput : MonoBehaviour
     public Animator anim;
     RaycastHit hitInfo = new RaycastHit();
 
+    public GameObject spinObject;
+
     PlayerSpin playerSpin;
 
     float refSlideCd = 1f;
@@ -26,10 +28,16 @@ public class PlayerInput : MonoBehaviour
     bool isSliding = false;
     bool isSpinning = false;
 
+
+    Vector3 firstVectorPoint = Vector3.zero;
+
+    public List<SliceVectors> sliceVectorList = new List<SliceVectors>(); 
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        playerSpin = GetComponent<PlayerSpin>();
+
+        playerSpin = spinObject.GetComponent<PlayerSpin>();
 
         slideCd = refSlideCd;
         spinCd = refSpinCd;
@@ -44,6 +52,15 @@ public class PlayerInput : MonoBehaviour
         {
             OnLeftMoveClick();
         }
+        if (Input.GetMouseButtonDown(1))
+        {
+            OnRightClick();
+        }
+        if (Input.GetMouseButtonUp(1))
+        {
+            OnRightClickReleased();
+        }
+        
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
@@ -70,6 +87,41 @@ public class PlayerInput : MonoBehaviour
         if (spinCd < 2)
         {
             spinCd += Time.deltaTime;
+        }
+    }
+
+    void OnRightClick()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray.origin, ray.direction, out hitInfo))
+        {
+            firstVectorPoint = hitInfo.point;
+        }
+    }
+    void OnRightClickReleased()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray.origin, ray.direction, out hitInfo))
+        {
+            Vector3 secondVectorPoint = secondVectorPoint = hitInfo.point;
+            VectorSlice(firstVectorPoint, secondVectorPoint);
+            firstVectorPoint = Vector3.zero;
+        }
+    }
+    void VectorSlice(Vector3 firstPoint, Vector3 secondPoint)
+    {
+        Ray Ray;
+        RaycastHit[] hits = Physics.RaycastAll(firstPoint, secondPoint.normalized, Vector3.Distance(firstPoint, secondPoint));
+
+        SliceVectors sliceVectors = new SliceVectors(firstPoint, secondPoint);
+        sliceVectorList.Add(sliceVectors);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (hits[i].collider.gameObject.tag == "Enemy")
+            {
+
+            }
         }
     }
     void OnLeftMoveClick()
@@ -123,5 +175,24 @@ public class PlayerInput : MonoBehaviour
         agent.ResetPath();
         agent.isStopped = false;
         anim.SetBool("spin", false);
+    }
+    private void OnDrawGizmos()
+    {
+        for (int i = 0; i < sliceVectorList.Count; i++)
+        {
+            Gizmos.DrawLine(sliceVectorList[i].first, sliceVectorList[i].second);
+        }        
+    }
+}
+
+public struct SliceVectors
+{
+    public Vector3 first;
+    public Vector3 second;
+
+    public SliceVectors(Vector3 firstParam, Vector3 secondParam)
+    {
+        first = firstParam;
+        second = secondParam;
     }
 }

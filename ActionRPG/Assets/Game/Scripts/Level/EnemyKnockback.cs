@@ -9,6 +9,8 @@ public class EnemyKnockback : MonoBehaviour
 
     public float forceMagnitude;
 
+    bool hasBeenHit = false;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -19,12 +21,15 @@ public class EnemyKnockback : MonoBehaviour
     {
         
     }
-    private void OnCollisionEnter(Collision collision)
+
+    public void OnHit(Vector3 direction)
     {
-        Debug.Log("kys");
-        if (collision.gameObject.tag == "Spin")
+        Debug.Log("wow");
+        if (!hasBeenHit)
         {
-            rb.AddForce(Vector3.back * forceMagnitude);
+            rb.AddForce(direction * forceMagnitude);
+            hasBeenHit = true;
         }
+        
     }
 }
