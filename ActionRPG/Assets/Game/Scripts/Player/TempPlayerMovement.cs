@@ -19,10 +19,13 @@ public class TempPlayerMovement : MonoBehaviour
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+
+        agent.updatePosition = false;
         //rb = GetComponent<Rigidbody>();
     }   
     void Update()
     {
+        Debug.Log(agent.velocity.magnitude);
         if (Input.GetMouseButtonDown(0))
         {
             OnMouseButtonDown();
@@ -31,6 +34,7 @@ public class TempPlayerMovement : MonoBehaviour
         {
             animat.SetFloat(speedHash, 0.0f);
         }
+
     }
     void OnMouseButtonDown()
     {
@@ -43,9 +47,9 @@ public class TempPlayerMovement : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
 
         if (Physics.Raycast(ray, out hit))
-        {
-            animat.SetFloat(speedHash, 1f);
+        {          
             agent.SetDestination(hit.point);
+            animat.SetFloat(speedHash, 2f);
         }       
 
     }
