@@ -45,7 +45,7 @@ public class PlayerSpin : MonoBehaviour
 
             //transform.localRotation = Quaternion.Euler(Vector3.SmoothDamp(transform.localRotation.eulerAngles, targetRot, ref rotVelocity, spinTime));
 
-            transform.RotateAround(transform.parent.transform.position, Vector3.up, 10f);
+            transform.RotateAround(transform.parent.transform.position, Vector3.up, 2.5f);
 
             //spinCollider.size = Vector3.SmoothDamp(spinCollider.size, targetSize, ref sizeVelocity, spinTime);
             //if (spinCollider.size.z > 0.2f)

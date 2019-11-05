@@ -6,6 +6,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 public class PlayerInput : MonoBehaviour
 {
+    public GameObject vectorObject;
+
     NavMeshAgent agent;
     public Animator anim;
     RaycastHit hitInfo = new RaycastHit();
@@ -17,17 +19,26 @@ public class PlayerInput : MonoBehaviour
     float refSlideCd = 1f;
     float slideCd = 0;
 
+    float baseClickTick = 0.2f;
+    float clickTick;
+    bool leftClickHeld = false;
+
     float refSpinCd = 2f;
     float spinCd = 0;
 
     float baseSpeed;
-    public float slideSpeed;
+    float baseAcceleration;
+    float slideSpeed;
+    float slideAcceleration;
+    float turnSpeed;
+
+    public float slideAccelMultipier = 2f;
 
     Vector3 nextDestination = Vector3.zero;
 
     bool isSliding = false;
     bool isSpinning = false;
-
+    bool firstAlpha3Press = true;
 
     Vector3 firstVectorPoint = Vector3.zero;
 
@@ -41,21 +52,51 @@ public class PlayerInput : MonoBehaviour
 
         slideCd = refSlideCd;
         spinCd = refSpinCd;
+        clickTick = 0;
 
         baseSpeed = agent.speed;
+        baseAcceleration = agent.acceleration;
+        turnSpeed = agent.angularSpeed;
         slideSpeed = baseSpeed * 1.5f;
+        slideAcceleration = baseAcceleration * slideAccelMultipier;
     }
 
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            OnLeftMoveClick();
+            leftClickHeld = true;
         }
+        if (clickTick < 0 && leftClickHeld)
+        {
+            OnLeftMoveClick();
+            clickTick = baseClickTick;
+            
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            leftClickHeld = false;
+        }
+
         if (Input.GetMouseButtonDown(1))
         {
             OnRightClick();
         }
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            if (firstAlpha3Press)
+            {
+                OnKey3Pressed(true);
+                firstAlpha3Press = false;
+            }
+            else
+            {
+                OnKey3Pressed(false);
+                firstAlpha3Press = true;
+            }
+        }     
+
         if (Input.GetMouseButtonUp(1))
         {
             OnRightClickReleased();
@@ -87,16 +128,43 @@ public class PlayerInput : MonoBehaviour
         if (spinCd < 2)
         {
             spinCd += Time.deltaTime;
-        }
+        }        
+
+        clickTick -= Time.deltaTime;
     }
 
     void OnRightClick()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray.origin, ray.direction, out hitInfo))
-        {
+        {           
             firstVectorPoint = hitInfo.point;
         }
+    }
+    void OnKey3Pressed(bool firstPress)
+    {
+        if (firstPress)
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray.origin, ray.direction, out hitInfo))
+            {
+                firstVectorPoint = hitInfo.point;
+                MainVector vectorScript = vectorObject.GetComponent<MainVector>();
+                vectorScript.TwoStepSlice(firstVectorPoint , Vector3.zero, true);
+            }
+        }
+        else
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray.origin, ray.direction, out hitInfo))
+            {
+                Vector3 secondVectorPoint = secondVectorPoint = hitInfo.point;
+                MainVector vectorScript = vectorObject.GetComponent<MainVector>();
+                vectorScript.TwoStepSlice(firstVectorPoint, secondVectorPoint, false);
+                firstVectorPoint = Vector3.zero;
+            }
+        }
+        
     }
     void OnRightClickReleased()
     {
@@ -107,29 +175,27 @@ public class PlayerInput : MonoBehaviour
             VectorSlice(firstVectorPoint, secondVectorPoint);
             firstVectorPoint = Vector3.zero;
         }
+
+
     }
     void VectorSlice(Vector3 firstPoint, Vector3 secondPoint)
     {
-        Ray Ray;
-        RaycastHit[] hits = Physics.RaycastAll(firstPoint, secondPoint.normalized, Vector3.Distance(firstPoint, secondPoint));
+        //Ray Ray;
+        //RaycastHit[] hits = Physics.RaycastAll(firstPoint, secondPoint.normalized, Vector3.Distance(firstPoint, secondPoint));
 
         SliceVectors sliceVectors = new SliceVectors(firstPoint, secondPoint);
         sliceVectorList.Add(sliceVectors);
 
-        for (int i = 0; i < hits.Length; i++)
-        {
-            if (hits[i].collider.gameObject.tag == "Enemy")
-            {
-
-            }
-        }
+        MainVector vectorScript = vectorObject.GetComponent<MainVector>();
+        vectorScript.StartSlice(sliceVectors.first, sliceVectors.second);
+        
     }
     void OnLeftMoveClick()
     {
          Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
          if (Physics.Raycast(ray.origin, ray.direction, out hitInfo))
          {
-            if (!isSliding || !isSpinning)
+            if (!isSliding && !isSpinning)
             {
                 agent.destination = hitInfo.point;
                 nextDestination = Vector3.zero;
@@ -142,20 +208,30 @@ public class PlayerInput : MonoBehaviour
     }
     IEnumerator Slide()
     {
-        isSliding = true;
-        anim.SetBool("slide", true);
-
-        agent.speed = slideSpeed;
-
-        yield return new WaitForSeconds(1f);
-        anim.SetBool("slide", false);
-        isSliding = false;
-       
-        if (nextDestination != Vector3.zero)
+        if (anim.GetBool("move"))
         {
-            agent.destination = nextDestination;
+            isSliding = true;
+            anim.SetBool("slide", true);
+
+            agent.speed = slideSpeed;
+            agent.acceleration = slideAcceleration;
+            agent.destination += transform.forward.normalized * 4;
+
+            yield return new WaitForSeconds(0.8f);
+            agent.ResetPath();
+            anim.SetBool("slide", false);
+            anim.SetBool("move", true);
+            isSliding = false;
+
+            if (nextDestination != Vector3.zero)
+            {
+                agent.destination = nextDestination;
+            }
+            agent.speed = baseSpeed;
+            agent.acceleration = baseAcceleration;
+            
         }
-        agent.speed = baseSpeed;
+        
     }
     IEnumerator Spin()
     {
@@ -178,6 +254,7 @@ public class PlayerInput : MonoBehaviour
     }
     private void OnDrawGizmos()
     {
+        Gizmos.color = Color.red;
         for (int i = 0; i < sliceVectorList.Count; i++)
         {
             Gizmos.DrawLine(sliceVectorList[i].first, sliceVectorList[i].second);
@@ -194,5 +271,6 @@ public struct SliceVectors
     {
         first = firstParam;
         second = secondParam;
+
     }
 }
