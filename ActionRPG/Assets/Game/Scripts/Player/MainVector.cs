@@ -22,6 +22,8 @@ public class MainVector : MonoBehaviour
     Vector3 sliceVelocity = Vector3.zero;
     Vector3 followVelocity = Vector3.zero;
 
+    Quaternion defaultRotation;
+
     public float setupTime = 0.4f;
     public float sliceTime = 0.2f;
     public float followTime = 0.5f;
@@ -70,6 +72,8 @@ public class MainVector : MonoBehaviour
         }
         if (followPlayer)
         {
+            Quaternion.RotateTowards(transform.localRotation, defaultRotation, 5f);
+
             transform.position = Vector3.SmoothDamp(transform.position, 
                 new Vector3(player.transform.position.x, transform.position.y, player.transform.position.z),
                 ref followVelocity, followTime);
@@ -119,6 +123,8 @@ public class MainVector : MonoBehaviour
         targetPos = targetLoc;
         if (!inMotion)
         {
+            //sliceTime = Vector3.Distance(startLoc, targetLoc);
+
             setupTimer = setupTime;
             sliceTimer = sliceTime;
 
@@ -146,12 +152,14 @@ public class MainVector : MonoBehaviour
         }
         else if(!firstPress && !followPlayer)
         {
+            //sliceTime = Vector3.Distance(startLoc, targetLoc);                        
+
             targetPos = targetLoc;
             sliceTimer = sliceTime;
             isTwoStepSlice = false;
             settingUp = false;
             slicing = true;
-            followPlayer = true;
+            //followPlayer = true;
         }
     }
 
@@ -177,13 +185,18 @@ public class MainVector : MonoBehaviour
         }
     }
     void PerformSlice()
-    {       
+    {
+        defaultRotation = transform.localRotation;
+        Vector3.RotateTowards(transform.localRotation.eulerAngles, targetPos, 5f, 5f);
+
         targetPos.y = 0.5f;
 
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref sliceVelocity, sliceTime);
 
         sliceTimer -= Time.deltaTime;
-        if (sliceTimer <= 0)
+        //if (sliceTimer <= 0)
+        Vector3 diff = transform.position - targetPos;
+        if (diff.sqrMagnitude < 0.0001)
         {
             slicing = false;
             inMotion = false;
