@@ -249,6 +249,7 @@ public class PlayerInput : MonoBehaviour
 
         anim.SetBool("move", false);
         agent.ResetPath();
+        isSpinning = false;
         agent.isStopped = false;
         anim.SetBool("spin", false);
     }

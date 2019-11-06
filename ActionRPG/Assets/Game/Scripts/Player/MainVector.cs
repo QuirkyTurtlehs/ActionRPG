@@ -193,11 +193,11 @@ public class MainVector : MonoBehaviour
     }
     void ReleaseVector()
     {
-        transform.parent = null;
+        //transform.parent = null;
     }
     void BringBackVector()
     {
-        transform.parent = player.transform;
+        //transform.parent = player.transform;
     }
     private void OnTriggerEnter(Collider other)
     {
