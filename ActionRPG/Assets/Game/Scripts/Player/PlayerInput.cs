@@ -239,16 +239,17 @@ public class PlayerInput : MonoBehaviour
         Debug.Log("yaaaaaaaaaaaay");
         anim.SetBool("move", false);
         anim.SetBool("spin", true);
+        agent.ResetPath();
         agent.isStopped = true;
 
         playerSpin.SpinActivated();
         
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(1.1f);
 
         playerSpin.SpinDeactivated();
 
         anim.SetBool("move", false);
-        agent.ResetPath();
+        
         isSpinning = false;
         agent.isStopped = false;
         anim.SetBool("spin", false);
