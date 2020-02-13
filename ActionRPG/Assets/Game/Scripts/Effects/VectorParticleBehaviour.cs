@@ -11,7 +11,7 @@ public class VectorParticleBehaviour : MonoBehaviour
 
     static ParticleSystem.Particle[] particles = new ParticleSystem.Particle[2000];
 
-    int count;
+    int count;   
 
     void Start()
     {
@@ -30,6 +30,7 @@ public class VectorParticleBehaviour : MonoBehaviour
     void Update()
     {
 
+
         count = vectorSystem.GetParticles(particles);
 
         for (int i = 0; i < count; i++)
@@ -40,7 +41,8 @@ public class VectorParticleBehaviour : MonoBehaviour
             Vector3 v2 = Target.transform.position;
             
             Vector3 targetPos = (v2 - v1) * (particle.remainingLifetime / particle.startLifetime);
-            //targetPos.y += 0.5f;
+            //particle.remainingLiftime = particle.startLifetime * Time.deltaTime
+
             particle.position = vectorSystem.transform.InverseTransformPoint(v2 - targetPos);
             particles[i] = particle;
         }

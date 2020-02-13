@@ -219,6 +219,7 @@ public class MainVector : MonoBehaviour
         if (other.gameObject.tag == "Enemy")
         {
             Debug.Log("death");
+            other.gameObject.SetActive(false);
         }
     }
 }

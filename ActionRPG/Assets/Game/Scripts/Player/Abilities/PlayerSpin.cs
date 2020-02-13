@@ -63,7 +63,7 @@ public class PlayerSpin : MonoBehaviour
                 if (hits.Length > 0)
                 {
                     Debug.Log("eyyyyyyyy");
-                }
+                }   
 
                 if (hits[i].collider.gameObject.tag == "Enemy")
                 {

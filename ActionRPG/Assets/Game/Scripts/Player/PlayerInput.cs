@@ -197,6 +197,7 @@ public class PlayerInput : MonoBehaviour
          {
             if (!isSliding && !isSpinning)
             {
+                agent.ResetPath();
                 agent.destination = hitInfo.point;
                 nextDestination = Vector3.zero;
             }

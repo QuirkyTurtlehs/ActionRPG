@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Spin
   - Enemy
+  - Lethal
   layers:
   - Default
   - TransparentFX
